@@ -17,7 +17,8 @@ func main() {
 	r := e.Group("/v1")
 
 	r.GET("/", handler.HelloWorld)
-	r.GET("/test", handler.CollectionSize)
-	r.GET("/contents", handler.TestContents)
+	r.GET("/books", handler.GetBooks)
+	// r.GET("/test", handler.CollectionSize)
+	// r.GET("/contents", handler.TestContents)
 	e.Logger.Fatal(e.Start(":1323"))
 }

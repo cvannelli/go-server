@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"context"
+
 	"../database"
 	"../model"
+	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
 var db = database.DAO{}
@@ -23,10 +26,34 @@ func GetCollectionSize(col *string) (string, error) {
 }
 
 // GetTestContents : Controller for retrieving data in the test collection
-func GetTestContents(col *string) (*model.JSON, error) {
+// func GetTestContents(col *string) (*model.JSON, error) {
+
+// 	var filter interface{}
+// 	s, err := db.Find(col, filter)
+
+// 	return s, err
+// }
+
+// Find : Controller for retrieving data in the test collection
+func Find(col string) (interface{}, error) {
 
 	var filter interface{}
-	s, err := db.Find(col, filter)
+	var cur mongo.Cursor
 
-	return s, err
+	cur, err := db.Find(cur, "Books", filter)
+
+	defer cur.Close(context.Background())
+
+	// var result model.JSON
+	var result []model.Book
+	for cur.Next(context.Background()) {
+		var raw model.Book
+		if err := raw.FromBSON(cur); err != nil {
+			return result, err
+		}
+
+		result = append(result, raw)
+	}
+
+	return result, err
 }

@@ -2,13 +2,9 @@ package database
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"strconv"
 
-	"../model"
-
-	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
@@ -53,36 +49,53 @@ func (d *DAO) CollectionSize(n *string) (string, error) {
 	return s, err
 }
 
+// // Find : Runs a find function on the collection w/ filter
+// func (d *DAO) Find(collectionName *string, filter interface{}) (*model.JSON, error) {
+
+// 	var cur mongo.Cursor
+// 	ctx := context.Background()
+
+// 	col := db.Collection(*collectionName)
+// 	cur, err := col.Find(ctx, filter)
+
+// 	defer cur.Close(ctx)
+
+// 	var result model.JSON
+// 	doc := bson.NewDocument()
+// 	for cur.Next(ctx) {
+// 		doc.Reset()
+// 		if err := cur.Decode(doc); err != nil {
+// 			log.Fatal(err)
+// 		}
+
+// 		var raw model.Document
+// 		if err := json.Unmarshal([]byte(doc.ToExtJSON(false)), &raw); err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		result = append(result, raw)
+
+// 	}
+
+// 	if err := cur.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	return &result, err
+// }
+
 // Find : Runs a find function on the collection w/ filter
-func (d *DAO) Find(collectionName *string, filter interface{}) (*model.JSON, error) {
+func (d *DAO) Find(cur mongo.Cursor, collectionName string, filter interface{}) (mongo.Cursor, error) {
+	col := db.Collection(collectionName)
+	cur, err := col.Find(nil, filter)
 
-	var cur mongo.Cursor
-	ctx := context.Background()
-
-	col := db.Collection(*collectionName)
-	cur, err := col.Find(ctx, filter)
-
-	defer cur.Close(ctx)
-
-	var result model.JSON
-	doc := bson.NewDocument()
-	for cur.Next(ctx) {
-		doc.Reset()
-		if err := cur.Decode(doc); err != nil {
-			log.Fatal(err)
-		}
-
-		var raw model.Document
-		if err := json.Unmarshal([]byte(doc.ToExtJSON(false)), &raw); err != nil {
-			log.Fatal(err)
-		}
-		result = append(result, raw)
-
-	}
-
-	if err := cur.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	return &result, err
+	return cur, err
 }
+
+// // EstimatedDocumentCount : Gets an estimate of the count of documents
+// func (d *DAO) EstimatedDocumentCount(collectionName *string) (*int64, error) {
+
+// 	result := db.Collection(*collectionName)
+// 	count, err := result.EstimatedDocumentCount(nil)
+
+// 	return count, err
+// }
